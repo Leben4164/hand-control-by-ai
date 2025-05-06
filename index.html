@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine 2D 러닝 게임</title>
+    <title>코어 데이터 분석 AI기반 2D 게임</title>
     <link rel="stylesheet" href="styles.css">
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <!-- Teachable Machine 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
     <!-- Teachable Machine 이미지 모델 라이브러리 -->
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
     <!-- Phaser 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
 </head>
+
 <body>
     <!-- 모델 파일 제출 화면 -->
     <div id="model-upload-screen" class="screen">
-        <h1>Teachable Machine 2D 러닝 게임</h1>
+        <h1>코어 데이터 분석 AI기반 2D 게임</h1>
         <p>Teachable Machine으로 학습한 "점프" 및 "슬라이드" 손동작 모델 파일을 업로드하세요.</p>
-        
+
         <div class="upload-container">
             <input type="file" id="model-file" accept=".json">
             <button id="load-model-btn">모델 파일 적용</button>
         </div>
-        
+
         <div id="model-status" class="status-message"></div>
     </div>
 
@@ -32,7 +35,7 @@
     <div id="model-test-screen" class="screen hidden">
         <h2>모델 적용 테스트</h2>
         <p>손동작을 취해보세요. 웹캠에서 인식된 동작이 아래에 표시됩니다.</p>
-        
+
         <div class="webcam-container">
             <div id="webcam-wrapper">
                 <video id="webcam" autoplay playsinline></video>
@@ -64,7 +67,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="test-question">
             <p>모델이 올바르게 동작하나요?</p>
             <div class="test-buttons">
@@ -116,4 +119,5 @@
     <script src="game.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
