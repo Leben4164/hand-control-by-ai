@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine 2D 러닝 게임</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <!-- Teachable Machine 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+    <!-- Teachable Machine 이미지 모델 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+    <!-- Phaser 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+<body>
+    <!-- 모델 파일 제출 화면 -->
+    <div id="model-upload-screen" class="screen">
+        <h1>Teachable Machine 2D 러닝 게임</h1>
+        <p>Teachable Machine으로 학습한 "점프" 및 "슬라이드" 손동작 모델 파일을 업로드하세요.</p>
+        
+        <div class="upload-container">
+            <input type="file" id="model-file" accept=".json">
+            <button id="load-model-btn">모델 파일 적용</button>
+        </div>
+        
+        <div id="model-status" class="status-message"></div>
+    </div>
+
+    <!-- 모델 적용 테스트 화면 -->
+    <div id="model-test-screen" class="screen hidden">
+        <h2>모델 적용 테스트</h2>
+        <p>손동작을 취해보세요. 웹캠에서 인식된 동작이 아래에 표시됩니다.</p>
+        
+        <div class="webcam-container">
+            <div id="webcam-wrapper">
+                <video id="webcam" autoplay playsinline></video>
+            </div>
+            <div id="prediction-result" class="prediction-box">
+                <div id="prediction-label">인식된 동작: <span id="detected-action">-</span></div>
+                <div class="prediction-bars">
+                    <div class="prediction-item">
+                        <span>점프:</span>
+                        <div class="progress-bar-container">
+                            <div id="jump-bar" class="progress-bar"></div>
+                        </div>
+                        <span id="jump-probability">0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>슬라이드:</span>
+                        <div class="progress-bar-container">
+                            <div id="slide-bar" class="progress-bar"></div>
+                        </div>
+                        <span id="slide-probability">0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>가만히:</span>
+                        <div class="progress-bar-container">
+                            <div id="idle-bar" class="progress-bar"></div>
+                        </div>
+                        <span id="idle-probability">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-question">
+            <p>모델이 올바르게 동작하나요?</p>
+            <div class="test-buttons">
+                <button id="test-yes-btn">예</button>
+                <button id="test-no-btn">아니오</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 메인 화면 -->
+    <div id="game-main-screen" class="screen hidden">
+        <h1>2D 러닝 게임</h1>
+        <div class="player-info">
+            <div class="input-group">
+                <label for="student-id">학번:</label>
+                <input type="text" id="student-id" placeholder="학번을 입력하세요">
+            </div>
+            <div class="input-group">
+                <label for="player-name">이름:</label>
+                <input type="text" id="player-name" placeholder="이름을 입력하세요">
+            </div>
+        </div>
+        <div id="high-score-display">최고 점수: <span id="high-score">0</span></div>
+        <button id="start-game-btn">게임 시작</button>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-screen" class="screen hidden">
+        <div id="game-container"></div>
+        <div id="countdown" class="hidden">5</div>
+    </div>
+
+    <!-- 게임 오버 화면 -->
+    <div id="game-over-screen" class="screen hidden">
+        <h2>게임 오버</h2>
+        <div class="score-container">
+            <div id="final-score">최종 점수: <span>0</span></div>
+            <div id="best-score">최고 점수: <span>0</span></div>
+        </div>
+        <div id="ranking-container">
+            <h3>랭킹</h3>
+            <ul id="ranking-list"></ul>
+        </div>
+        <button id="restart-btn">다시 시작</button>
+    </div>
+
+    <!-- 스크립트 파일 -->
+    <script src="model.js"></script>
+    <script src="game.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
