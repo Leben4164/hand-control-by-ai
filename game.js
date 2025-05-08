@@ -9,7 +9,7 @@ const gameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { y: 1000 },
-            debug: false
+            debug: true
         }
     },
     scene: {
@@ -23,6 +23,7 @@ const gameConfig = {
 let game;
 let player;
 let obstacles;
+let slideObstacles; // 슬라이드 장애물을 위한 별도 그룹
 let ground;
 let background;
 let scoreText;
@@ -35,6 +36,7 @@ let obstacleInterval = 1500; // 장애물 생성 간격 (ms)
 let gameSpeed = 300; // 게임 속도
 let scoreIncreaseInterval = 100; // 점수 증가 간격 (ms)
 let lastScoreTime = 0;
+let playerSpeed = 150;
 
 // 게임 시작 함수
 function startGame() {
@@ -48,6 +50,10 @@ function startGame() {
     gameOver = false;
     jumping = false;
     sliding = false;
+    lastPlayerTime = 0;
+    obstacleInterval = 1500;
+    gameSpeed = 300;
+    lastScoreTime = 0;
 
     // 새 게임 인스턴스 생성
     game = new Phaser.Game(gameConfig);
@@ -83,6 +89,7 @@ function create() {
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
     player.body.setSize(20, 48); // 기본 충돌 박스 크기
+    player.setFlipX(true); // 캐릭터가 오른쪽을 바라보도록 설정
 
     // 플레이어 애니메이션
     this.anims.create({
@@ -106,13 +113,26 @@ function create() {
 
     // 장애물 그룹 생성
     obstacles = this.physics.add.group();
+    
+    // 슬라이드 장애물을 위한 별도 그룹 생성
+    slideObstacles = this.physics.add.group();
 
     // 충돌 설정
-    this.physics.add.collider(player, ground);
+    this.physics.add.collider(player, ground, null, function() {
+        // 슬라이딩 상태에서 플레이어가 바닥을 통과하지 않도록 함
+        if (sliding) {
+            return player.body.velocity.y >= 0;
+        }
+        return true;
+    }, this);
     this.physics.add.collider(obstacles, ground);
 
     // 플레이어와 장애물 충돌 처리
     this.physics.add.overlap(player, obstacles, hitObstacle, null, this);
+    
+    // 플레이어와 슬라이드 장애물 충돌 처리
+    this.physics.add.overlap(player, slideObstacles, hitSlideObstacle, null, this);
+    
 
     // 점수 텍스트
     scoreText = this.add.text(16, 16, '점수: 0', { fontSize: '24px', fill: '#000' });
@@ -151,7 +171,12 @@ function update(time, delta) {
     }
 
     // Teachable Machine 모델에서 동작 가져오기
-    const action = getCurrentAction();
+    let action = 'idle';
+    try {
+        action = getCurrentAction();
+    } catch (error) {
+        console.warn('getCurrentAction 함수를 찾을 수 없습니다:', error);
+    }
 
     // 플레이어 동작 처리
     if (action === 'jump' && player.body.touching.down && !jumping) {
@@ -171,6 +196,10 @@ function update(time, delta) {
         if (player.body.touching.down) {
             player.anims.play('idle', true);
             player.body.setSize(20, 48); // 기본 충돌 박스 크기로 복원
+            // 슬라이드 상태에서 기본 상태로 전환 시 위치 조정
+            if (sliding) {
+                player.y -= 12; // 바닥을 뚫고 내려가는 것 방지
+            }
             jumping = false;
             sliding = false;
         }
@@ -185,114 +214,264 @@ function update(time, delta) {
 
 // 장애물 생성 함수
 function createObstacle(scene) {
-    // 장애물 유형 랜덤 선택 (0: 낮은 장애물, 1: 높은 장애물)
-    const obstacleType = Phaser.Math.Between(0, 1);
+    // 장애물 유형 랜덤 선택 (0: 낮은 장애물, 1: 높은 장애물, 2: 높은 슬라이드 장애물)
+    const obstacleType = Phaser.Math.Between(0, 2);
 
     // 장애물 생성 위치
     const x = gameConfig.width + 100;
     let y;
     let scale;
 
+    // 바닥 위치 참조
+    const groundY = 390;
+    
     if (obstacleType === 0) {
-        // 낮은 장애물 (슬라이드로 피해야 함)
-        y = 350;
+        // 낮은 장애물 (점프로 피해야 함)
+        y = 0; 
         scale = 0.5;
-    } else {
+        
+        // 장애물 생성 및 설정
+        const obstacle = obstacles.create(x, y, 'obstacle');
+        obstacle.setOrigin(0, 0);
+        obstacle.setScale(scale);
+        obstacle.setData('type', 'low');
+        
+        // 장애물 이동 속도 설정
+        obstacle.setVelocityX(-gameSpeed);
+        
+        // 화면 밖으로 나가면 제거
+        obstacle.checkWorldBounds = true;
+        obstacle.outOfBoundsKill = true;
+    } else if (obstacleType === 1) {
         // 높은 장애물 (점프로 피해야 함)
-        y = 320;
+        y = 0;
         scale = 0.7;
+        
+        // 장애물 생성 및 설정
+        const obstacle = obstacles.create(x, y, 'obstacle');
+        obstacle.setOrigin(0, 0);
+        obstacle.setScale(scale);
+        obstacle.setData('type', 'high');
+        
+        // 장애물 이동 속도 설정
+        obstacle.setVelocityX(-gameSpeed);
+        
+        // 화면 밖으로 나가면 제거
+        obstacle.checkWorldBounds = true;
+        obstacle.outOfBoundsKill = true;
+    } else if (obstacleType === 2) {
+        // 슬라이드 장애물 생성 (별도 함수로 처리)
+        createSlideObstacle(scene, x);
     }
+}
 
-    // 장애물 생성 및 설정
-    const obstacle = obstacles.create(x, y, 'obstacle');
-    obstacle.setOrigin(0, 1);
-    obstacle.setScale(scale);
-    obstacle.setImmovable(true);
-
-    // 장애물 이동 속도 설정
-    obstacle.setVelocityX(-gameSpeed);
-
-    // 화면 밖으로 나가면 제거
-    obstacle.checkWorldBounds = true;
-    obstacle.outOfBoundsKill = true;
+// 슬라이드 장애물 생성 함수
+function createSlideObstacle(scene, x) {
+    try {
+        // 슬라이드 장애물 위치 계산 (플레이어가 슬라이드했을 때 통과할 수 있는 높이)
+        const y = 200;
+        const scale = 0.4;
+        
+        // 슬라이드 장애물 생성
+        const slideObstacle = slideObstacles.create(x, y, 'obstacle');
+        slideObstacle.setOrigin(0, 0); // 위에서부터 시작
+        slideObstacle.setScale(scale);
+        slideObstacle.setData('type', 'slide');
+        
+        // 중력 영향 없음
+        slideObstacle.body.setGravityY(0);
+        slideObstacle.body.setAllowGravity(false);
+        slideObstacle.setImmovable(true);
+        
+        // 장애물 이동 속도 설정
+        slideObstacle.setVelocityX(-gameSpeed);
+        
+        // 화면 밖으로 나가면 제거
+        slideObstacle.checkWorldBounds = true;
+        slideObstacle.outOfBoundsKill = true;
+        
+        // 슬라이드 장애물의 높이를 시각적으로 표시 (디버깅용)
+        if (gameConfig.physics.arcade.debug) {
+            const debugText = scene.add.text(x, y, '슬라이드 장애물', { fontSize: '12px', fill: '#ff0000' });
+            scene.tweens.add({
+                targets: debugText,
+                x: -100,
+                duration: (gameConfig.width + 100 + x) / gameSpeed * 1000,
+                ease: 'Linear',
+                onComplete: function() {
+                    debugText.destroy();
+                }
+            });
+        }
+    } catch (error) {
+        console.error('createSlideObstacle 함수 실행 중 오류:', error);
+    }
 }
 
 // 장애물 충돌 처리 함수
 function hitObstacle() {
-    // 게임 오버 처리
-    this.physics.pause();
-    player.setTint(0xff0000);
-    gameOver = true;
+    try {
+        // 게임 오버 처리
+        this.physics.pause();
+        player.setTint(0xff0000);
+        gameOver = true;
 
-    // 최고 점수 업데이트
-    updateHighScore(score);
+        // 최고 점수 업데이트
+        try {
+            updateHighScore(score);
+        } catch (error) {
+            console.warn('updateHighScore 함수 실행 중 오류:', error);
+            // 로컬 스토리지에 직접 저장 시도
+            try {
+                const highScore = parseInt(localStorage.getItem('highScore') || '0', 10);
+                if (score > highScore) {
+                    localStorage.setItem('highScore', score.toString());
+                }
+            } catch (e) {
+                console.warn('로컬 스토리지 접근 오류:', e);
+            }
+        }
 
-    // 1초 후 게임 오버 화면 표시
-    setTimeout(() => {
-        showGameOverScreen();
-    }, 1000);
+        // 1초 후 게임 오버 화면 표시
+        setTimeout(() => {
+            try {
+                if (typeof showGameOverScreen === 'function') {
+                    showGameOverScreen();
+                } else {
+                    console.warn('showGameOverScreen 함수를 찾을 수 없습니다');
+                }
+            } catch (error) {
+                console.error('게임 오버 화면 표시 중 오류:', error);
+            }
+        }, 1000);
+    } catch (error) {
+        console.error('hitObstacle 함수 실행 중 오류:', error);
+    }
 }
+
+// 슬라이드 장애물 충돌 처리 함수
+function hitSlideObstacle() {
+    try {
+        // 슬라이딩 중이면 충돌 무시
+        if (sliding) {
+            return;
+        }
+        
+        // 게임 오버 처리
+        this.physics.pause();
+        player.setTint(0xff0000);
+        gameOver = true;
+
+        // 최고 점수 업데이트
+        try {
+            updateHighScore(score);
+        } catch (error) {
+            console.warn('updateHighScore 함수 실행 중 오류:', error);
+            // 로컬 스토리지에 직접 저장 시도
+            try {
+                const highScore = parseInt(localStorage.getItem('highScore') || '0', 10);
+                if (score > highScore) {
+                    localStorage.setItem('highScore', score.toString());
+                }
+            } catch (e) {
+                console.warn('로컬 스토리지 접근 오류:', e);
+            }
+        }
+
+        // 1초 후 게임 오버 화면 표시
+        setTimeout(() => {
+            try {
+                if (typeof showGameOverScreen === 'function') {
+                    showGameOverScreen();
+                } else {
+                    console.warn('showGameOverScreen 함수를 찾을 수 없습니다');
+                }
+            } catch (error) {
+                console.error('게임 오버 화면 표시 중 오류:', error);
+            }
+        }, 1000);
+    } catch (error) {
+        console.error('hitSlideObstacle 함수 실행 중 오류:', error);
+    }
+}
+
 
 // 최고 점수 업데이트 함수
 function updateHighScore(currentScore) {
-    // 로컬 스토리지에서 최고 점수 가져오기
-    const highScore = parseInt(localStorage.getItem('highScore') || '0', 10);
+    try {
+        // 로컬 스토리지에서 최고 점수 가져오기
+        const highScore = parseInt(localStorage.getItem('highScore') || '0', 10);
 
-    // 현재 점수가 최고 점수보다 높으면 업데이트
-    if (currentScore > highScore) {
-        localStorage.setItem('highScore', currentScore.toString());
+        // 현재 점수가 최고 점수보다 높으면 업데이트
+        if (currentScore > highScore) {
+            localStorage.setItem('highScore', currentScore.toString());
 
-        // 플레이어 정보 가져오기
-        const studentId = localStorage.getItem('studentId') || '익명';
-        const playerName = localStorage.getItem('playerName') || '플레이어';
+            // 플레이어 정보 가져오기
+            const studentId = localStorage.getItem('studentId') || '익명';
+            const playerName = localStorage.getItem('playerName') || '플레이어';
 
-        // 랭킹 정보 업데이트
-        updateRanking(studentId, playerName, currentScore);
+            // 랭킹 정보 업데이트
+            try {
+                updateRanking(studentId, playerName, currentScore);
+            } catch (error) {
+                console.warn('랭킹 업데이트 중 오류:', error);
+            }
+        }
+    } catch (error) {
+        console.warn('최고 점수 업데이트 중 오류:', error);
     }
 }
 
 // 랭킹 업데이트 함수
 function updateRanking(studentId, playerName, score) {
-    // 로컬 스토리지에서 랭킹 정보 가져오기
-    let rankings = JSON.parse(localStorage.getItem('rankings') || '[]');
+    try {
+        // 로컬 스토리지에서 랭킹 정보 가져오기
+        let rankings = JSON.parse(localStorage.getItem('rankings') || '[]');
 
-    // 새 랭킹 정보 추가
-    const newRanking = {
-        studentId: studentId,
-        playerName: playerName,
-        score: score,
-        date: new Date().toISOString()
-    };
+        // 새 랭킹 정보 추가
+        const newRanking = {
+            studentId: studentId,
+            playerName: playerName,
+            score: score,
+            date: new Date().toISOString()
+        };
 
-    // 기존 랭킹에 동일한 학번이 있는지 확인
-    const existingIndex = rankings.findIndex(r => r.studentId === studentId);
+        // 기존 랭킹에 동일한 학번이 있는지 확인
+        const existingIndex = rankings.findIndex(r => r.studentId === studentId);
 
-    if (existingIndex >= 0) {
-        // 기존 기록이 있고, 새 점수가 더 높으면 업데이트
-        if (rankings[existingIndex].score < score) {
-            rankings[existingIndex] = newRanking;
+        if (existingIndex >= 0) {
+            // 기존 기록이 있고, 새 점수가 더 높으면 업데이트
+            if (rankings[existingIndex].score < score) {
+                rankings[existingIndex] = newRanking;
+            }
+        } else {
+            // 기존 기록이 없으면 추가
+            rankings.push(newRanking);
         }
-    } else {
-        // 기존 기록이 없으면 추가
-        rankings.push(newRanking);
+
+        // 점수 기준 내림차순 정렬
+        rankings.sort((a, b) => b.score - a.score);
+
+        // 상위 10개만 유지
+        if (rankings.length > 10) {
+            rankings = rankings.slice(0, 10);
+        }
+
+        // 로컬 스토리지에 저장
+        localStorage.setItem('rankings', JSON.stringify(rankings));
+    } catch (error) {
+        console.warn('랭킹 업데이트 중 오류:', error);
     }
-
-    // 점수 기준 내림차순 정렬
-    rankings.sort((a, b) => b.score - a.score);
-
-    // 상위 10개만 유지
-    if (rankings.length > 10) {
-        rankings = rankings.slice(0, 10);
-    }
-
-    // 로컬 스토리지에 저장
-    localStorage.setItem('rankings', JSON.stringify(rankings));
 }
 
 // 게임 종료 함수
 function endGame() {
-    if (game) {
-        game.destroy(true);
-        game = null;
+    try {
+        if (game) {
+            game.destroy(true);
+            game = null;
+        }
+    } catch (error) {
+        console.error('게임 종료 중 오류:', error);
     }
 }
