@@ -8,6 +8,7 @@ const gameOverScreen = document.getElementById("game-over-screen");
 
 // 버튼
 const loadModelBtn = document.getElementById("load-model-btn");
+const loadURLBtn = document.getElementById("load-url-btn");
 const testYesBtn = document.getElementById("test-yes-btn");
 const testNoBtn = document.getElementById("test-no-btn");
 const startGameBtn = document.getElementById("start-game-btn");
@@ -29,6 +30,7 @@ function initApp() {
 
     // 버튼 이벤트 리스너
     loadModelBtn.addEventListener("click", loadModel);
+    loadURLBtn.addEventListener("click", loadModelFromURL);
     testYesBtn.addEventListener("click", handleModelTestSuccess);
     testNoBtn.addEventListener("click", handleModelTestFailure);
     startGameBtn.addEventListener("click", handleGameStart);
