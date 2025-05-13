@@ -5,18 +5,10 @@ const modelTestScreen = document.getElementById("model-test-screen");
 const gameMainScreen = document.getElementById("game-main-screen");
 const gameScreen = document.getElementById("game-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
-
-// 버튼
-const loadModelBtn = document.getElementById("load-model-btn");
-const loadURLBtn = document.getElementById("load-url-btn");
-const testYesBtn = document.getElementById("test-yes-btn");
-const testNoBtn = document.getElementById("test-no-btn");
-const startGameBtn = document.getElementById("start-game-btn");
-const restartBtn = document.getElementById("restart-btn");
-
 // 입력
 const studentIdInput = document.getElementById("student-id");
 const playerNameInput = document.getElementById("player-name");
+
 
 // 이벤트 리스너
 document.addEventListener("DOMContentLoaded", initApp);
@@ -27,9 +19,16 @@ document.addEventListener("DOMContentLoaded", initApp);
 function initApp() {
     // 로컬 스토리지에서 최고 점수 가져와서 표시
     updateHighScoreDisplay();
+    // 버튼
+    const loadURLBtn = document.getElementById("load-url-btn");
+    const testYesBtn = document.getElementById("test-yes-btn");
+    const testNoBtn = document.getElementById("test-no-btn");
+    const startGameBtn = document.getElementById("start-game-btn");
+    const restartBtn = document.getElementById("restart-btn");
+
+
 
     // 버튼 이벤트 리스너
-    loadModelBtn.addEventListener("click", loadModel);
     loadURLBtn.addEventListener("click", loadModelFromURL);
     testYesBtn.addEventListener("click", handleModelTestSuccess);
     testNoBtn.addEventListener("click", handleModelTestFailure);
@@ -178,7 +177,7 @@ function displayRanking() {
     rankings.forEach((ranking, index) => {
         const rankingItem = document.createElement("li");
         rankingItem.innerHTML = `
-            <span>${index + 1}. ${ranking.studentId} (${ranking.playerName})</span>
+            <span>${index + 1}. ${ranking.studentId} ${ranking.playerName}</span>
             <span>${ranking.score}점</span>
         `;
 

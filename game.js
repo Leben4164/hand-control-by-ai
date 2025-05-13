@@ -9,7 +9,7 @@ const gameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { y: 1000 },
-            debug: true
+            debug: false
         }
     },
     scene: {
@@ -59,10 +59,10 @@ class GameState {
         else if (this.score > 300) this.difficulty = 4;
         else if (this.score > 200) this.difficulty = 3;
         else if (this.score > 100) this.difficulty = 2;
-        
+
         // 난이도에 따라 사용 가능한 패턴 결정
         let availablePatterns;
-        switch(this.difficulty) {
+        switch (this.difficulty) {
             case 1: availablePatterns = ['single']; break;
             case 2: availablePatterns = ['single', 'double']; break;
             case 3: availablePatterns = ['single', 'double', 'triple']; break;
@@ -70,7 +70,7 @@ class GameState {
             case 5: availablePatterns = this.obstaclePatterns; break;
             default: availablePatterns = ['single'];
         }
-        
+
         // 랜덤하게 패턴 선택
         const randomIndex = Math.floor(Math.random() * availablePatterns.length);
         this.currentPattern = availablePatterns[randomIndex];
@@ -108,7 +108,7 @@ function preload() {
     this.load.image('background', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/skies/sky1.png');
     this.load.image('ground', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/sprites/platform.png');
     this.load.image('obstacle', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/sprites/block.png');
-    
+
     // 추가 장애물 이미지 로드
     this.load.image('obstacle-spike', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/sprites/diamond.png');
     this.load.image('obstacle-fire', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/sprites/fireball.png');
@@ -161,12 +161,12 @@ function create() {
 
     // 장애물 그룹 생성
     obstacles = this.physics.add.group();
-    
+
     // 슬라이드 장애물을 위한 별도 그룹 생성
     slideObstacles = this.physics.add.group();
 
     // 충돌 설정
-    this.physics.add.collider(player, ground, null, function() {
+    this.physics.add.collider(player, ground, null, function () {
         // 슬라이딩 상태에서 플레이어가 바닥을 통과하지 않도록 함
         if (gameState.sliding) {
             return player.body.velocity.y >= 0;
@@ -177,10 +177,10 @@ function create() {
 
     // 플레이어와 장애물 충돌 처리
     this.physics.add.overlap(player, obstacles, hitObstacle, null, this);
-    
+
     // 플레이어와 슬라이드 장애물 충돌 처리
     this.physics.add.overlap(player, slideObstacles, hitSlideObstacle, null, this);
-    
+
 
     // 점수 텍스트
     scoreText = this.add.text(16, 16, '점수: 0', { fontSize: '24px', fill: '#000' });
@@ -221,7 +221,7 @@ function update(time, delta) {
     // Teachable Machine 모델에서 동작 가져오기
     let action = 'idle';
     try {
-        action = getCurrentAction();
+        action = predict();
     } catch (error) {
         console.warn('getCurrentAction 함수를 찾을 수 없습니다:', error);
     }
@@ -264,12 +264,12 @@ function update(time, delta) {
 function createObstacle(scene) {
     // 패턴 선택
     const pattern = gameState.selectObstaclePattern();
-    
+
     // 장애물 생성 위치
     const x = gameConfig.width + 100;
-    
+
     // 패턴에 따라 장애물 생성
-    switch(pattern) {
+    switch (pattern) {
         case 'single':
             createSingleObstacle(scene, x);
             break;
@@ -294,14 +294,14 @@ function createObstacle(scene) {
 function createSingleObstacle(scene, x) {
     // 장애물 유형 랜덤 선택 (0-4: 다양한 장애물 유형)
     const obstacleType = Phaser.Math.Between(0, 4);
-    
+
     // 장애물 생성 위치
     let y;
     let scale;
     let obstacleKey = 'obstacle'; // 기본 장애물 이미지
-    
+
     // 장애물 유형에 따라 설정
-    switch(obstacleType) {
+    switch (obstacleType) {
         case 0: // 낮은 장애물
             y = 0;
             scale = 0.5;
@@ -324,16 +324,16 @@ function createSingleObstacle(scene, x) {
             obstacleKey = 'obstacle-fire';
             break;
     }
-    
+
     // 장애물 생성 및 설정
     const obstacle = obstacles.create(x, y, obstacleKey);
     obstacle.setOrigin(0, 0);
     obstacle.setScale(scale);
     obstacle.setData('type', obstacleType === 0 ? 'low' : 'high');
-    
+
     // 장애물 이동 속도 설정
     obstacle.setVelocityX(-gameState.gameSpeed);
-    
+
     // 화면 밖으로 나가면 제거
     obstacle.checkWorldBounds = true;
     obstacle.outOfBoundsKill = true;
@@ -368,9 +368,9 @@ function createSequenceObstacles(scene, x) {
     obstacle1.setVelocityX(-gameState.gameSpeed);
     obstacle1.checkWorldBounds = true;
     obstacle1.outOfBoundsKill = true;
-    
+
     createSlideObstacle(scene, x + 250);
-    
+
     const obstacle3 = obstacles.create(x + 500, 0, 'obstacle');
     obstacle3.setOrigin(0, 0);
     obstacle3.setScale(0.7);
@@ -386,29 +386,29 @@ function createSlideObstacle(scene, x) {
         // 슬라이드 장애물 위치 계산 (플레이어가 슬라이드했을 때 통과할 수 있는 높이)
         const y = 200;
         const scale = 0.4;
-        
+
         // 슬라이드 장애물 생성 (랜덤하게 다른 이미지 사용)
         const obstacleKeys = ['obstacle', 'obstacle-moving'];
         const randomKey = obstacleKeys[Phaser.Math.Between(0, 1)];
-        
+
         // 슬라이드 장애물 생성
         const slideObstacle = slideObstacles.create(x, y, randomKey);
         slideObstacle.setOrigin(0, 0); // 위에서부터 시작
         slideObstacle.setScale(scale);
         slideObstacle.setData('type', 'slide');
-        
+
         // 중력 영향 없음
         slideObstacle.body.setGravityY(0);
         slideObstacle.body.setAllowGravity(false);
         slideObstacle.setImmovable(true);
-        
+
         // 장애물 이동 속도 설정
         slideObstacle.setVelocityX(-gameState.gameSpeed);
-        
+
         // 화면 밖으로 나가면 제거
         slideObstacle.checkWorldBounds = true;
         slideObstacle.outOfBoundsKill = true;
-        
+
         // 슬라이드 장애물의 높이를 시각적으로 표시 (디버깅용)
         if (gameConfig.physics.arcade.debug) {
             const debugText = scene.add.text(x, y, '슬라이드 장애물', { fontSize: '12px', fill: '#ff0000' });
@@ -417,7 +417,7 @@ function createSlideObstacle(scene, x) {
                 x: -100,
                 duration: (gameConfig.width + 100 + x) / gameState.gameSpeed * 1000,
                 ease: 'Linear',
-                onComplete: function() {
+                onComplete: function () {
                     debugText.destroy();
                 }
             });
@@ -475,7 +475,7 @@ function hitSlideObstacle() {
         if (gameState.sliding) {
             return;
         }
-        
+
         // 게임 오버 처리
         this.physics.pause();
         player.setTint(0xff0000);
@@ -575,9 +575,14 @@ function updateRanking(studentId, playerName, score) {
         if (rankings.length > 10) {
             rankings = rankings.slice(0, 10);
         }
-
+        console.log(rankings)
         // 로컬 스토리지에 저장
         localStorage.setItem('rankings', JSON.stringify(rankings));
+
+        //화면에 반영
+        displayRanking()
+
+
     } catch (error) {
         console.warn('랭킹 업데이트 중 오류:', error);
     }
