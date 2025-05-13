@@ -39,11 +39,11 @@
     <!-- 모델 파일 제출 화면 -->
     <div id="model-upload-screen" class="screen">
         <h1>코어 데이터 분석 AI기반 2D 게임</h1>
-        <p>Teachable Machine으로 학습한 "점프" 및 "슬라이드" 손동작 모델 URL을 입력하세요.</p>
+        <p>Teachable Machine으로 학습한 모델 URL을 입력하세요.</p>
 
         <div class="upload-container">
             <p>또는 Teachable Machine 모델 URL 입력:</p>
-            <input type="text" id="model-url"
+            <input type="text" id="model-url" autocomplete="off"
                 placeholder="https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/">
             <button id="load-url-btn">모델 적용</button>
         </div>
@@ -104,15 +104,15 @@
 
     <!-- 게임 메인 화면 -->
     <div id="game-main-screen" class="screen hidden">
-        <h1>게임</h1>
+        <h1>게임 설정</h1>
         <div class="player-info">
             <div class="input-group">
                 <label for="student-id">학번:</label>
-                <input type="text" id="student-id" placeholder="학번을 입력하세요">
+                <input type="text" id="student-id" autocomplete="off" placeholder="학번을 입력하세요">
             </div>
             <div class="input-group">
                 <label for="player-name">이름:</label>
-                <input type="text" id="player-name" placeholder="이름을 입력하세요">
+                <input type="text" id="player-name" autocomplete="off" placeholder="이름을 입력하세요">
             </div>
         </div>
         <div id="high-score-display">최고 점수: <span id="high-score">0</span></div>

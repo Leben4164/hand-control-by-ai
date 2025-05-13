@@ -575,9 +575,14 @@ function updateRanking(studentId, playerName, score) {
         if (rankings.length > 10) {
             rankings = rankings.slice(0, 10);
         }
-
+        console.log(rankings)
         // 로컬 스토리지에 저장
         localStorage.setItem('rankings', JSON.stringify(rankings));
+
+        //화면에 반영
+        displayRanking()
+
+
     } catch (error) {
         console.warn('랭킹 업데이트 중 오류:', error);
     }

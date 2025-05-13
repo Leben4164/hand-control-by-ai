@@ -44,10 +44,10 @@ async function loadModelFromURL() {
 
             // 웹캠 초기화 및 설정
             await initializeWebcam();
-            labelContainer = document.getElementById('label-container');
+            /* labelContainer = document.getElementById('label-container');
             for (let i = 0; i < maxPredictions; i++) { // and class labels
                 labelContainer.appendChild(document.createElement('div'));
-            }
+            } */
 
             // 모델 로드 성공 메시지
             modelStatusElement.textContent = "모델이 성공적으로 불러와졌습니다!";
@@ -152,7 +152,7 @@ async function predict() {
                 highestProb = classPrediction.probability;
                 highestClass = classPrediction.className.toLowerCase();
             }
-            labelContainer.childNodes[i].innerHTML = classPrediction;
+            //labelContainer.childNodes[i].innerHTML = classPrediction;
         }
 
         // 임계값 이상인 경우에만 동작 변경
@@ -168,9 +168,9 @@ async function predict() {
 
             // 인식된 동작 표시
             const detectedActionElement = document.getElementById("detected-action");
-            if (detectedActionElement) {
-                detectedActionElement.textContent = currentAction;
-            }
+
+            detectedActionElement.textContent = currentAction;
+
         }
     } catch (error) {
         console.error("예측 중 오류 발생:", error);
