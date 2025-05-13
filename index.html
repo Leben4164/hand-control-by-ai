@@ -9,7 +9,8 @@
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.8.0"></script>
     <!-- Teachable Machine 라이브러리 -->
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
     <!-- 모델 로딩 상태 표시용 스타일 -->
     <style>
         .loading-spinner {
@@ -23,8 +24,11 @@
             margin-left: 10px;
             vertical-align: middle;
         }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
     <!-- Phaser 라이브러리 -->
@@ -35,22 +39,19 @@
     <!-- 모델 파일 제출 화면 -->
     <div id="model-upload-screen" class="screen">
         <h1>코어 데이터 분석 AI기반 2D 게임</h1>
-        <p>Teachable Machine으로 학습한 "점프" 및 "슬라이드" 손동작 모델 파일을 업로드하세요.</p>
+        <p>Teachable Machine으로 학습한 "점프" 및 "슬라이드" 손동작 모델 URL을 입력하세요.</p>
 
         <div class="upload-container">
-            <input type="file" id="model-file" accept=".json">
-            <button id="load-model-btn">모델 파일 적용</button>
-        </div>
-        <div class="upload-container">
             <p>또는 Teachable Machine 모델 URL 입력:</p>
-            <input type="text" id="model-url" placeholder="https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/">
-            <button id="load-url-btn">URL로 모델 적용</button>
+            <input type="text" id="model-url"
+                placeholder="https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/">
+            <button id="load-url-btn">모델 적용</button>
         </div>
 
         <div id="model-status" class="status-message"></div>
         <div class="model-info">
-            <p>모델 파일은 Teachable Machine에서 다운로드한 model.json 파일을 사용하세요.</p>
-            <p>3가지 클래스(점프, 슬라이드, 가만히)를 학습시킨 모델이 필요합니다.</p>
+            <p>모델 URL은 Teachable Machine에서 내보내기 버튼을 누르면 확인할 수 있습니다.</p>
+            <p>3가지 클래스(jump, slide, idle)를 학습시킨 모델이 필요합니다.</p>
         </div>
     </div>
 
@@ -65,6 +66,7 @@
             </div>
             <div id="prediction-result" class="prediction-box">
                 <div id="prediction-label">인식된 동작: <span id="detected-action">-</span></div>
+                <div id="label-container"></div>
                 <div class="prediction-bars">
                     <div class="prediction-item">
                         <span>점프:</span>

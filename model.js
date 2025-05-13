@@ -12,127 +12,55 @@ const PREDICTION_THRESHOLD = 0.7;
 let modelURL = "";
 
 /**
- * 모델 파일 로드 함수
- */
-async function loadModel() {
-    if (isLoading) return; // 이미 로딩 중이면 중복 실행 방지
-    
-    const modelFileInput = document.getElementById("model-file");
-    const modelStatusElement = document.getElementById("model-status");
-
-    // 파일 선택 확인
-    if (!modelFileInput.files[0]) {
-        modelStatusElement.textContent = "모델 파일을 선택해주세요.";
-        modelStatusElement.className = "status-message error";
-        return;
-    }
-
-    // 파일 확장자 확인
-    const fileName = modelFileInput.files[0].name;
-    if (!fileName.endsWith('.json')) {
-        modelStatusElement.textContent = "JSON 파일만 업로드 가능합니다.";
-        modelStatusElement.className = "status-message error";
-        return;
-    }
-
-    try {
-        isLoading = true;
-        // 로딩 스피너 추가
-        modelStatusElement.innerHTML = "모델 로딩 중... <div class='loading-spinner'></div>";
-        modelStatusElement.className = "status-message";
-
-        // 파일 객체 가져오기
-        const modelFile = modelFileInput.files[0];
-
-        // FileReader로 파일 내용 읽기
-        const reader = new FileReader();
-
-        // 파일 읽기 완료 후 실행될 콜백 함수
-        reader.onload = async function (e) {
-            try {
-                // 파일 내용을 JSON으로 파싱
-                const modelJSON = JSON.parse(e.target.result);
-
-                // 모델 파일 검증
-                if (!modelJSON || !modelJSON.modelTopology) {
-                    throw new Error("올바른 Teachable Machine 모델 형식이 아닙니다.");
-                }
-
-                await setupModelWithWebcam(modelJSON, modelStatusElement);
-            } catch (jsonError) {
-                console.error("모델 JSON 파싱 오류:", jsonError);
-                modelStatusElement.textContent = "잘못된 모델 파일 형식입니다. Teachable Machine에서 다운로드한 model.json 파일을 사용해주세요.";
-                modelStatusElement.className = "status-message error";
-                isLoading = false;
-            }
-        };
-
-        // 파일을 텍스트로 읽기
-        reader.readAsText(modelFile);
-
-    } catch (error) {
-        console.error("모델 로드 중 오류 발생:", error);
-        modelStatusElement.textContent = "모델 로드 중 오류가 발생했습니다. 다시 시도해주세요.";
-        modelStatusElement.className = "status-message error";
-        isModelLoaded = false;
-        isLoading = false;
-    }
-}
-
-/**
  * URL로 모델 로드 함수
  */
 async function loadModelFromURL() {
     if (isLoading) return; // 이미 로딩 중이면 중복 실행 방지
-    
+
     const modelURLInput = document.getElementById("model-url");
     const modelStatusElement = document.getElementById("model-status");
-    
+
     // URL 입력 확인
-    const url = modelURLInput.value.trim();
+    const url = modelURLInput.value;
     if (!url) {
         modelStatusElement.textContent = "모델 URL을 입력해주세요.";
         modelStatusElement.className = "status-message error";
         return;
     }
-    
+
     try {
         isLoading = true;
         // 로딩 스피너 추가
         modelStatusElement.innerHTML = "모델 로딩 중... <div class='loading-spinner'></div>";
         modelStatusElement.className = "status-message";
-        
-        // URL 형식 확인 및 수정
-        let modelURL = url;
-        if (!url.endsWith('/')) {
-            modelURL = url + '/';
-        }
-        if (!url.endsWith('model.json') && !url.endsWith('/')) {
-            modelURL = url + '/model.json';
-        } else if (!url.endsWith('model.json')) {
-            modelURL = url + 'model.json';
-        }
-        
+        const modelURL = url + 'model.json';
+        const metadataURL = url + 'metadata.json';
+
+
         try {
             // Teachable Machine 모델 로드
-            model = await tmImage.load(modelURL);
+            model = await tmImage.load(modelURL, metadataURL);
             maxPredictions = model.getTotalClasses();
-            
+
             // 웹캠 초기화 및 설정
             await initializeWebcam();
-            
+            labelContainer = document.getElementById('label-container');
+            for (let i = 0; i < maxPredictions; i++) { // and class labels
+                labelContainer.appendChild(document.createElement('div'));
+            }
+
             // 모델 로드 성공 메시지
             modelStatusElement.textContent = "모델이 성공적으로 불러와졌습니다!";
             modelStatusElement.className = "status-message success";
             isModelLoaded = true;
-            
+
             // 테스트 화면으로 전환
             setTimeout(() => {
                 document.getElementById("model-upload-screen").classList.add("hidden");
                 document.getElementById("model-test-screen").classList.remove("hidden");
-                
+
                 // 예측 시작
-                startPrediction();
+                requestAnimationFrame(loop);
             }, 1500);
         } catch (modelError) {
             console.error("모델 로드 오류:", modelError);
@@ -155,56 +83,18 @@ async function initializeWebcam() {
     // 웹캠 초기화
     const flip = false; // 웹캠 좌우 반전 여부
     webcam = new tmImage.Webcam(400, 400, flip);
-    
+
     try {
         // 웹캠 설정
         await webcam.setup();
         await webcam.play();
-        
+
         // 웹캠 요소에 연결
         document.getElementById("webcam").srcObject = webcam.webcam.srcObject;
         return true;
     } catch (webcamError) {
         console.error("웹캠 설정 오류:", webcamError);
         throw webcamError;
-    }
-}
-
-/**
- * 모델과 웹캠 설정 함수
- */
-async function setupModelWithWebcam(modelJSON, statusElement) {
-    try {
-        // 웹캠 초기화
-        await initializeWebcam();
-        
-        // 모델 파일을 Blob으로 변환하여 URL 생성
-        const modelBlob = new Blob([JSON.stringify(modelJSON)], { type: 'application/json' });
-        const modelBlobURL = URL.createObjectURL(modelBlob);
-        
-        // 실제 Teachable Machine 모델 로드
-        model = await tmImage.load(modelBlobURL, modelJSON);
-        maxPredictions = model.getTotalClasses();
-        
-        // 모델 로드 성공 메시지
-        statusElement.textContent = "모델이 성공적으로 불러와졌습니다!";
-        statusElement.className = "status-message success";
-        isModelLoaded = true;
-        
-        // 테스트 화면으로 전환
-        setTimeout(() => {
-            document.getElementById("model-upload-screen").classList.add("hidden");
-            document.getElementById("model-test-screen").classList.remove("hidden");
-            
-            // 예측 시작
-            startPrediction();
-        }, 1500);
-    } catch (error) {
-        console.error("모델 설정 오류:", error);
-        statusElement.textContent = error.message || "모델 설정 중 오류가 발생했습니다.";
-        statusElement.className = "status-message error";
-    } finally {
-        isLoading = false;
     }
 }
 
@@ -222,21 +112,10 @@ async function loadTeachableMachineModel(modelURL) {
     }
 }
 
-/**
- * 예측 시작 함수
- */
-function startPrediction() {
-    if (!isModelLoaded) return;
-
-    // 이전 인터벌이 있다면 제거
-    if (predictionInterval) {
-        clearInterval(predictionInterval);
-    }
-
-    // 100ms마다 예측 수행
-    predictionInterval = setInterval(async () => {
-        await predict();
-    }, 100);
+async function loop() {
+    webcam.update(); // update the webcam frame
+    await predict();
+    window.requestAnimationFrame(loop);
 }
 
 /**
@@ -267,11 +146,13 @@ async function predict() {
         let highestClass = "";
 
         for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction = prediction[i];
+            const classPrediction =
+                prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
             if (classPrediction.probability > highestProb) {
                 highestProb = classPrediction.probability;
                 highestClass = classPrediction.className.toLowerCase();
             }
+            labelContainer.childNodes[i].innerHTML = classPrediction;
         }
 
         // 임계값 이상인 경우에만 동작 변경
