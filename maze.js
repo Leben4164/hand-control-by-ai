@@ -69,7 +69,7 @@ class MazeScene extends Phaser.Scene {
   preload() {
     
     // 기존 방식도 유지 (실제 파일이 있는 경우 사용)
-    this.load.image('player_file', 'assets/player.png'); // 플레이어 스프라이트 로드 시도
+    this.load.image('player', 'assets/player.png'); // 플레이어 스프라이트 로드 시도
   }
 
   create() {
