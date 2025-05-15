@@ -185,7 +185,7 @@ class MazeScene extends Phaser.Scene {
     this.gameTimerText.setText('Time: ' + elapsedTime.toFixed(1) + 's');
 
     // 도착 지점 도달 확인
-    if (528 < this.player.x < 576 && 16 < this.player.y < 64) {
+    if (528 < this.player.x && this.player.x < 576 && 16 < this.player.y && this.player.y < 64) {
       this.reachedEnd();
     }
   }
