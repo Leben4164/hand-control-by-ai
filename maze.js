@@ -112,6 +112,7 @@ class MazeScene extends Phaser.Scene {
     this.player.setVelocity(0);
 
     this.playerState = predict();
+    console.log(`예측 수행함 : ${this.playerState}`)
 
     switch (this.playerState) {
       case '위로':

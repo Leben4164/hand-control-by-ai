@@ -145,54 +145,50 @@ function stopPrediction() {
  * 예측 수행 함수
  */
 async function predict() {
-    if (!isModelLoaded || !webcam) return;
 
-    try {
-        // 웹캠에서 이미지 가져와서 예측
-        const prediction = await model.predict(webcam.canvas);
+    // 웹캠에서 이미지 가져와서 예측
+    const prediction = await model.predict(webcam.canvas);
 
-        // 예측 결과 UI 업데이트
-        updatePredictionUI(prediction);
+    // 예측 결과 UI 업데이트
+    updatePredictionUI(prediction);
 
-        // 현재 동작 결정 (가장 높은 확률의 클래스)
-        let highestProb = 0;
-        let highestClass = "";
+    // 현재 동작 결정 (가장 높은 확률의 클래스)
+    let highestProb = 0;
+    let highestClass = "";
 
-        for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
-            if (classPrediction.probability > highestProb) {
-                highestProb = classPrediction.probability;
-                highestClass = classPrediction.className.toLowerCase();
-            }
-            //labelContainer.childNodes[i].innerHTML = classPrediction;
+    for (let i = 0; i < maxPredictions; i++) {
+        const classPrediction =
+            prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
+        if (classPrediction.probability > highestProb) {
+            highestProb = classPrediction.probability;
+            highestClass = classPrediction.className.toLowerCase();
         }
-
-        // 임계값 이상인 경우에만 동작 변경
-        if (highestProb >= PREDICTION_THRESHOLD) {
-            // 동작 상태 업데이트
-            if (highestClass.includes("정지")) {
-                currentAction = "idle";
-            } else if (highestClass.includes("상")) {
-                currentAction = "up";
-            } else if (highestClass.includes("하")) {
-                currentAction = "down";
-            } else if (highestClass.includes("좌")) {
-                currentAction = "left";
-            } else if (highestClass.includes("우")) {
-                currentAction = "right";
-            }
-
-            // 인식된 동작 표시
-            const detectedActionElement = document.getElementById("detected-action");
-
-            detectedActionElement.textContent = currentAction;
-
-        }
-        return currentAction
-    } catch (error) {
-        console.error("예측 중 오류 발생:", error);
+        //labelContainer.childNodes[i].innerHTML = classPrediction;
     }
+
+    // 임계값 이상인 경우에만 동작 변경
+    if (highestProb >= PREDICTION_THRESHOLD) {
+        // 동작 상태 업데이트
+        if (highestClass.includes("정지")) {
+            currentAction = "idle";
+        } else if (highestClass.includes("상")) {
+            currentAction = "up";
+        } else if (highestClass.includes("하")) {
+            currentAction = "down";
+        } else if (highestClass.includes("좌")) {
+            currentAction = "left";
+        } else if (highestClass.includes("우")) {
+            currentAction = "right";
+        }
+
+        // 인식된 동작 표시
+        const detectedActionElement = document.getElementById("detected-action");
+
+        detectedActionElement.textContent = currentAction;
+
+    }
+    return currentAction
+
 }
 
 /**
