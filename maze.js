@@ -61,7 +61,7 @@ class MazeScene extends Phaser.Scene {
       2: 0x0000ff, // 파랑 (출발지)
       4: 0xff0000  // 빨강 (도착지)
     };
-    this.tileSize = 32; // 타일 크기 (플레이어 스프라이트에 맞춰 조정 필요)
+    this.tileSize = 16; // 타일 크기 (플레이어 스프라이트에 맞춰 조정 필요)
     this.playerSpeed = 100;
     this.playerState = '가만히';
   }
