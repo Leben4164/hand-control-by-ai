@@ -261,8 +261,8 @@ const config = {
   scene: [MazeScene, EndScene]
 };
 
-// 게임 시작 함수 - 전역으로 사용할 수 있도록 window에 할당
-window.startGame = function() {
+// 게임 초기화 함수 - 전역으로 사용할 수 있도록 window에 할당
+window.initMazeGame = function() {
   // 기존 게임 인스턴스가 있으면 제거
   if (game) {
     game.destroy(true);
