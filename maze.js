@@ -40,23 +40,6 @@ class MazeScene extends Phaser.Scene {
   }
 
   preload() {
-    // 플레이어 이미지가 없는 경우 대체 이미지 생성
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
-    
-    // 간단한 플레이어 아이콘 그리기
-    ctx.fillStyle = '#4a90e2';
-    ctx.beginPath();
-    ctx.arc(16, 16, 12, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // 데이터 URL로 변환
-    const dataURL = canvas.toDataURL();
-    
-    // 이미지 로드
-    this.textures.addBase64('player', dataURL);
     
     // 기존 방식도 유지 (실제 파일이 있는 경우 사용)
     this.load.image('player_file', 'assets/player.png'); // 플레이어 스프라이트 로드 시도
@@ -108,9 +91,18 @@ class MazeScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(this.startTile.x, this.startTile.y, 'player');
     this.player.setCollideWorldBounds(true);
 
-    // 물리 충돌 처리 - 생성된 모든 벽과 충돌
-    const walls = this.physics.world.staticBodies.getChildren();
-    this.physics.add.collider(this.player, walls);
+    // 벽을 저장할 그룹 생성
+    this.wallsGroup = this.physics.add.staticGroup();
+    
+    // 이미 생성된 모든 정적 물체를 그룹에 추가
+    this.children.each(child => {
+      if (child.body && child.body.immovable) {
+        this.wallsGroup.add(child);
+      }
+    });
+    
+    // 플레이어와 벽 충돌 처리
+    this.physics.add.collider(this.player, this.wallsGroup);
     
     // 카메라 설정
     this.cameras.main.setBounds(0, 0, this.mazeWidth, this.mazeHeight);
@@ -248,8 +240,8 @@ class EndScene extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: 320, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
-  height: 320,
+  width: 960, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
+  height: 540,
   parent: 'game-container', // 게임이 렌더링될 HTML 요소
   physics: {
     default: 'arcade',

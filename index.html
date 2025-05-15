@@ -135,8 +135,59 @@
 
     <!-- 게임 화면 -->
     <div id="game-screen" class="screen hidden">
-        <div id="game-container" style="width: 320px; height: 320px; margin: 0 auto;"></div>
-        <div id="countdown" class="hidden">5</div>
+        <div style="display: flex; justify-content: center; align-items: flex-start; gap: 20px;">
+            <!-- 게임 컨테이너 -->
+            <div id="game-container" style="width: 960px; height: 540px;"></div>
+            
+            <!-- 웹캠 미리보기 -->
+            <div class="webcam-preview" style="width: 320px;">
+                <h3>손동작 미리보기</h3>
+                <div id="webcam-preview-container">
+                    <video id="webcam-preview" autoplay playsinline style="width: 100%; border-radius: 8px;"></video>
+                </div>
+                <div class="prediction-preview" style="margin-top: 10px;">
+                    <div>인식된 동작: <span id="preview-action" style="font-weight: bold;">-</span></div>
+                    <div class="prediction-bars" style="margin-top: 10px;">
+                        <div class="prediction-item" style="margin-bottom: 5px;">
+                            <span>정지:</span>
+                            <div class="progress-bar-container" style="display: inline-block; width: 70%; height: 10px; background: #eee; margin: 0 5px;">
+                                <div id="preview-idle-bar" class="progress-bar" style="height: 100%; width: 0%; background: #3498db;"></div>
+                            </div>
+                            <span id="preview-idle-probability">0%</span>
+                        </div>
+                        <div class="prediction-item" style="margin-bottom: 5px;">
+                            <span>위로:</span>
+                            <div class="progress-bar-container" style="display: inline-block; width: 70%; height: 10px; background: #eee; margin: 0 5px;">
+                                <div id="preview-up-bar" class="progress-bar" style="height: 100%; width: 0%; background: #3498db;"></div>
+                            </div>
+                            <span id="preview-up-probability">0%</span>
+                        </div>
+                        <div class="prediction-item" style="margin-bottom: 5px;">
+                            <span>아래로:</span>
+                            <div class="progress-bar-container" style="display: inline-block; width: 70%; height: 10px; background: #eee; margin: 0 5px;">
+                                <div id="preview-down-bar" class="progress-bar" style="height: 100%; width: 0%; background: #3498db;"></div>
+                            </div>
+                            <span id="preview-down-probability">0%</span>
+                        </div>
+                        <div class="prediction-item" style="margin-bottom: 5px;">
+                            <span>왼쪽:</span>
+                            <div class="progress-bar-container" style="display: inline-block; width: 70%; height: 10px; background: #eee; margin: 0 5px;">
+                                <div id="preview-left-bar" class="progress-bar" style="height: 100%; width: 0%; background: #3498db;"></div>
+                            </div>
+                            <span id="preview-left-probability">0%</span>
+                        </div>
+                        <div class="prediction-item" style="margin-bottom: 5px;">
+                            <span>오른쪽:</span>
+                            <div class="progress-bar-container" style="display: inline-block; width: 70%; height: 10px; background: #eee; margin: 0 5px;">
+                                <div id="preview-right-bar" class="progress-bar" style="height: 100%; width: 0%; background: #3498db;"></div>
+                            </div>
+                            <span id="preview-right-probability">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="countdown" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 72px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">5</div>
     </div>
 
     <!-- 게임 오버 화면 -->

@@ -104,6 +104,13 @@ async function initializeWebcam() {
 
         // 웹캠 요소에 연결
         document.getElementById("webcam").srcObject = webcam.webcam.srcObject;
+        
+        // 게임 화면의 웹캠 미리보기에도 연결
+        const previewVideo = document.getElementById("webcam-preview");
+        if (previewVideo) {
+            previewVideo.srcObject = webcam.webcam.srcObject;
+        }
+        
         return true;
     } catch (webcamError) {
         console.error("웹캠 설정 오류:", webcamError);
@@ -215,29 +222,46 @@ function predict() {
 function updatePredictionUI(prediction) {
     // 각 클래스별 확률 표시
     for (let i = 0; i < maxPredictions; i++) {
+        const className = prediction[i].className;
         const classPrediction = prediction[i];
-        const className = classPrediction.className.toLowerCase();
-        const probability = classPrediction.probability.toFixed(2);
         const percentage = Math.round(classPrediction.probability * 100);
 
-        // 해당 클래스의 프로그레스 바 및 텍스트 업데이트
+        // 해당 클래스의 프로그레스 바 및 텍스트 업데이트 - 테스트 화면
         if (className.includes("정지")) {
-            document.getElementById("idle-bar").style.width = `${percentage}%`;
-            document.getElementById("idle-probability").textContent = `${percentage}%`;
+            updateProgressBar("idle", percentage);
         } else if (className.includes("상")) {
-            document.getElementById("up-bar").style.width = `${percentage}%`;
-            document.getElementById("up-probability").textContent = `${percentage}%`;
+            updateProgressBar("up", percentage);
         } else if (className.includes("하")) {
-            document.getElementById("down-bar").style.width = `${percentage}%`;
-            document.getElementById("down-probability").textContent = `${percentage}%`;
+            updateProgressBar("down", percentage);
         } else if (className.includes("좌")) {
-            document.getElementById("left-bar").style.width = `${percentage}%`;
-            document.getElementById("left-probability").textContent = `${percentage}%`;
+            updateProgressBar("left", percentage);
         } else if (className.includes("우")) {
-            document.getElementById("right-bar").style.width = `${percentage}%`;
-            document.getElementById("right-probability").textContent = `${percentage}%`;
+            updateProgressBar("right", percentage);
         }
     }
+    
+    // 현재 인식된 동작 게임 화면에도 표시
+    const previewAction = document.getElementById("preview-action");
+    if (previewAction) {
+        previewAction.textContent = currentAction;
+    }
+}
+
+/**
+ * 프로그레스 바 업데이트 함수
+ */
+function updateProgressBar(type, percentage) {
+    // 테스트 화면 프로그레스 바 업데이트
+    const bar = document.getElementById(`${type}-bar`);
+    const prob = document.getElementById(`${type}-probability`);
+    if (bar) bar.style.width = `${percentage}%`;
+    if (prob) prob.textContent = `${percentage}%`;
+    
+    // 게임 화면 프로그레스 바 업데이트
+    const previewBar = document.getElementById(`preview-${type}-bar`);
+    const previewProb = document.getElementById(`preview-${type}-probability`);
+    if (previewBar) previewBar.style.width = `${percentage}%`;
+    if (previewProb) previewProb.textContent = `${percentage}%`;
 }
 
 /**
