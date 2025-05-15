@@ -25,13 +25,13 @@ class MazeScene extends Phaser.Scene {
       [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1],
       [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1],
       [1, 3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1],
       [1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 1, 1, 1, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 3, 1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 3, 1],
       [1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1],
       [1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1],
@@ -67,7 +67,7 @@ class MazeScene extends Phaser.Scene {
   }
 
   preload() {
-    
+
     // 기존 방식도 유지 (실제 파일이 있는 경우 사용)
     this.load.image('player', 'assets/player.png'); // 플레이어 스프라이트 로드 시도
   }
@@ -77,35 +77,35 @@ class MazeScene extends Phaser.Scene {
 
     // 맵 생성 - 직접 그래픽으로 그리기
     const graphics = this.add.graphics();
-    
+
     // 미로 크기 계산
     this.mazeWidth = this.mazeData[0].length * this.tileSize;
     this.mazeHeight = this.mazeData.length * this.tileSize;
-    
+
     // 게임 화면 크기 설정
     this.physics.world.setBounds(0, 0, this.mazeWidth, this.mazeHeight);
-    
+
     // 미로 그리기
     for (let y = 0; y < this.mazeData.length; y++) {
       for (let x = 0; x < this.mazeData[y].length; x++) {
         const tileValue = this.mazeData[y][x];
         const tileX = x * this.tileSize;
         const tileY = y * this.tileSize;
-        
+
         // 타일 색상 설정
         const color = this.tileColors[tileValue];
         graphics.fillStyle(color, 1);
-        
+
         // 타일 그리기
         graphics.fillRect(tileX, tileY, this.tileSize, this.tileSize);
-        
+
         // 시작 지점과 종료 지점 저장
         if (tileValue === 2) { // 시작 지점
           this.startTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
         } else if (tileValue === 4) { // 종료 지점
           this.endTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
         }
-        
+
         // 벽 타일에 물리 충돌 추가
         if (tileValue === 1) {
           const wall = this.add.rectangle(tileX + this.tileSize / 2, tileY + this.tileSize / 2, this.tileSize, this.tileSize);
@@ -115,22 +115,22 @@ class MazeScene extends Phaser.Scene {
     }
 
     // 플레이어 생성
-    this.player = this.physics.add.sprite(this.startTile.x, this.startTile.y, 'player');
+    this.player = this.physics.add.sprite(500, 35, 'player');
     this.player.setCollideWorldBounds(true);
 
     // 벽을 저장할 그룹 생성
     this.wallsGroup = this.physics.add.staticGroup();
-    
+
     // 이미 생성된 모든 정적 물체를 그룹에 추가
     this.children.each(child => {
       if (child.body && child.body.immovable) {
         this.wallsGroup.add(child);
       }
     });
-    
+
     // 플레이어와 벽 충돌 처리
     this.physics.add.collider(this.player, this.wallsGroup);
-    
+
     // 카메라 설정
     this.cameras.main.setBounds(0, 0, this.mazeWidth, this.mazeHeight);
     this.cameras.main.startFollow(this.player);
@@ -185,7 +185,7 @@ class MazeScene extends Phaser.Scene {
     this.gameTimerText.setText('Time: ' + elapsedTime.toFixed(1) + 's');
 
     // 도착 지점 도달 확인
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.endTile.x, this.endTile.y) < this.tileSize / 2) {
+    if (528 < this.player.x < 576 && 16 < this.player.y < 64) {
       this.reachedEnd();
     }
   }
@@ -260,7 +260,7 @@ class EndScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive()
       .on('pointerdown', () => {
-        this.scene.start('MazeScene');
+        location.reload(true);
       });
   }
 }
@@ -281,7 +281,7 @@ const config = {
 };
 
 // 게임 초기화 함수 - 전역으로 사용할 수 있도록 window에 할당
-window.initMazeGame = function() {
+window.initMazeGame = function () {
   // 기존 게임 인스턴스가 있으면 제거
   if (game) {
     game.destroy(true);
