@@ -2,7 +2,7 @@
 let model, webcam, labelContainer, maxPredictions;
 let isModelLoaded = false;
 let predictionInterval = null;
-let currentAction = "idle"; // 현재 인식된 동작 (idle, jump, slide)
+let currentAction = "idle"; // 현재 인식된 동작 (idle, up, down, left, right)
 let isLoading = false; // 모델 로딩 중 상태
 
 // 예측 임계값 (이 값 이상일 때 해당 동작으로 인식)
@@ -112,8 +112,6 @@ async function initializeWebcam() {
 }
 
 /**
-=======
->>>>>>> fd3e1be98f48848e5dc13f34bffbc960417d1dea
  * Teachable Machine 모델 로드 함수
  */
 async function loadTeachableMachineModel(modelURL) {
@@ -173,12 +171,16 @@ async function predict() {
         // 임계값 이상인 경우에만 동작 변경
         if (highestProb >= PREDICTION_THRESHOLD) {
             // 동작 상태 업데이트
-            if (highestClass.includes("jump")) {
-                currentAction = "jump";
-            } else if (highestClass.includes("slide")) {
-                currentAction = "slide";
-            } else {
+            if (highestClass.includes("정지")) {
                 currentAction = "idle";
+            } else if (highestClass.includes("상")) {
+                currentAction = "up";
+            } else if (highestClass.includes("하")) {
+                currentAction = "down";
+            } else if (highestClass.includes("좌")) {
+                currentAction = "left";
+            } else if (highestClass.includes("우")) {
+                currentAction = "right";
             }
 
             // 인식된 동작 표시
@@ -205,15 +207,21 @@ function updatePredictionUI(prediction) {
         const percentage = Math.round(classPrediction.probability * 100);
 
         // 해당 클래스의 프로그레스 바 및 텍스트 업데이트
-        if (className.includes("jump")) {
-            document.getElementById("jump-bar").style.width = `${percentage}%`;
-            document.getElementById("jump-probability").textContent = `${percentage}%`;
-        } else if (className.includes("slide")) {
-            document.getElementById("slide-bar").style.width = `${percentage}%`;
-            document.getElementById("slide-probability").textContent = `${percentage}%`;
-        } else {
+        if (className.includes("정지")) {
             document.getElementById("idle-bar").style.width = `${percentage}%`;
             document.getElementById("idle-probability").textContent = `${percentage}%`;
+        } else if (className.includes("상")) {
+            document.getElementById("up-bar").style.width = `${percentage}%`;
+            document.getElementById("up-probability").textContent = `${percentage}%`;
+        } else if (className.includes("하")) {
+            document.getElementById("down-bar").style.width = `${percentage}%`;
+            document.getElementById("down-probability").textContent = `${percentage}%`;
+        } else if (className.includes("좌")) {
+            document.getElementById("left-bar").style.width = `${percentage}%`;
+            document.getElementById("left-probability").textContent = `${percentage}%`;
+        } else if (className.includes("우")) {
+            document.getElementById("right-bar").style.width = `${percentage}%`;
+            document.getElementById("right-probability").textContent = `${percentage}%`;
         }
     }
 }
