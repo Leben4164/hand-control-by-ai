@@ -140,6 +140,18 @@ function startCountdown() {
 }
 
 /**
+ * 게임 시작 함수
+ */
+function startGame() {
+    // maze.js에서 정의한 startGame 함수 호출
+    if (typeof window.startGame === 'function') {
+        window.startGame();
+    } else {
+        console.error('미로 게임 초기화 실패: startGame 함수가 정의되지 않았습니다.');
+    }
+}
+
+/**
  * 게임 오버 화면 표시 함수
  */
 function showGameOverScreen() {

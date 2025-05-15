@@ -127,7 +127,7 @@ async function loadTeachableMachineModel(modelURL) {
 
 async function loop() {
     webcam.update(); // update the webcam frame
-    await predict();
+    await predictAsync();
     window.requestAnimationFrame(loop);
 }
 
@@ -144,51 +144,69 @@ function stopPrediction() {
 /**
  * 예측 수행 함수
  */
-async function predict() {
+// 비동기 예측 함수 - 내부적으로 사용
+async function predictAsync() {
+    if (!isModelLoaded || !webcam) return "가만히";
 
-    // 웹캠에서 이미지 가져와서 예측
-    const prediction = await model.predict(webcam.canvas);
+    try {
+        // 웹캠에서 이미지 가져와서 예측
+        const prediction = await model.predict(webcam.canvas);
 
-    // 예측 결과 UI 업데이트
-    updatePredictionUI(prediction);
+        // 예측 결과 UI 업데이트
+        updatePredictionUI(prediction);
 
-    // 현재 동작 결정 (가장 높은 확률의 클래스)
-    let highestProb = 0;
-    let highestClass = "";
+        // 현재 동작 결정 (가장 높은 확률의 클래스)
+        let highestProb = 0;
+        let highestClass = "";
 
-    for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction =
-            prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
-        if (classPrediction.probability > highestProb) {
-            highestProb = classPrediction.probability;
-            highestClass = classPrediction.className.toLowerCase();
-        }
-        //labelContainer.childNodes[i].innerHTML = classPrediction;
-    }
-
-    // 임계값 이상인 경우에만 동작 변경
-    if (highestProb >= PREDICTION_THRESHOLD) {
-        // 동작 상태 업데이트
-        if (highestClass.includes("정지")) {
-            currentAction = "idle";
-        } else if (highestClass.includes("상")) {
-            currentAction = "up";
-        } else if (highestClass.includes("하")) {
-            currentAction = "down";
-        } else if (highestClass.includes("좌")) {
-            currentAction = "left";
-        } else if (highestClass.includes("우")) {
-            currentAction = "right";
+        for (let i = 0; i < maxPredictions; i++) {
+            const className = prediction[i].className;
+            const probability = prediction[i].probability;
+            
+            if (probability > highestProb) {
+                highestProb = probability;
+                highestClass = className.toLowerCase();
+            }
         }
 
-        // 인식된 동작 표시
-        const detectedActionElement = document.getElementById("detected-action");
+        // 임계값 이상인 경우에만 동작 변경
+        if (highestProb >= PREDICTION_THRESHOLD) {
+            // 동작 상태 업데이트
+            if (highestClass.includes("정지")) {
+                currentAction = "가만히";
+            } else if (highestClass.includes("상")) {
+                currentAction = "위로";
+            } else if (highestClass.includes("하")) {
+                currentAction = "아래로";
+            } else if (highestClass.includes("좌")) {
+                currentAction = "왼쪽으로";
+            } else if (highestClass.includes("우")) {
+                currentAction = "오른쪽으로";
+            }
 
-        detectedActionElement.textContent = currentAction;
-
+            // 인식된 동작 표시
+            const detectedActionElement = document.getElementById("detected-action");
+            if (detectedActionElement) {
+                detectedActionElement.textContent = currentAction;
+            }
+        }
+        
+        return currentAction;
+    } catch (error) {
+        console.error("예측 중 오류 발생:", error);
+        return "가만히";
     }
-    return currentAction
+}
 
+// 동기 함수 - maze.js에서 사용
+function predict() {
+    // 모델이 로드되지 않았거나 웹캠이 없는 경우 기본값 반환
+    if (!isModelLoaded || !webcam) {
+        return "가만히";
+    }
+    
+    // 이미 예측된 현재 동작 반환 (비동기 함수에서 업데이트됨)
+    return currentAction;
 }
 
 /**

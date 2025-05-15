@@ -40,46 +40,66 @@ class MazeScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('player', 'assets/player.png'); // 플레이어 스프라이트 로드 (assets 폴더에 player.png 파일 필요)
+    // 플레이어 이미지가 없는 경우 대체 이미지 생성
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    
+    // 간단한 플레이어 아이콘 그리기
+    ctx.fillStyle = '#4a90e2';
+    ctx.beginPath();
+    ctx.arc(16, 16, 12, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // 데이터 URL로 변환
+    const dataURL = canvas.toDataURL();
+    
+    // 이미지 로드
+    this.textures.addBase64('player', dataURL);
+    
+    // 기존 방식도 유지 (실제 파일이 있는 경우 사용)
+    this.load.image('player_file', 'assets/player.png'); // 플레이어 스프라이트 로드 시도
   }
 
   create() {
     this.cameras.main.setBackgroundColor('#333333'); // 배경색 설정
 
-    // 맵 생성
-    this.map = this.make.tilemap({ data: this.mazeData, tileWidth: this.tileSize, tileHeight: this.tileSize });
-    this.tileset = this.map.addTilesetImage(null, null, this.tileSize, this.tileSize, 0, 0); // 이미지 없이 색상으로 타일 생성
-
-    this.wallsLayer = this.map.createBlankLayer('walls', 0, 0, this.map.width, this.map.height);
-    this.floorLayer1 = this.map.createBlankLayer('floor1', 0, 0, this.map.width, this.map.height);
-    this.floorLayer2 = this.map.createBlankLayer('floor2', 0, 0, this.map.width, this.map.height);
-    this.startLayer = this.map.createBlankLayer('start', 0, 0, this.map.width, this.map.height);
-    this.endLayer = this.map.createBlankLayer('end', 0, 0, this.map.width, this.map.height);
-
+    // 맵 생성 - 직접 그래픽으로 그리기
+    const graphics = this.add.graphics();
+    
+    // 미로 크기 계산
+    this.mazeWidth = this.mazeData[0].length * this.tileSize;
+    this.mazeHeight = this.mazeData.length * this.tileSize;
+    
+    // 게임 화면 크기 설정
+    this.physics.world.setBounds(0, 0, this.mazeWidth, this.mazeHeight);
+    
+    // 미로 그리기
     for (let y = 0; y < this.mazeData.length; y++) {
       for (let x = 0; x < this.mazeData[y].length; x++) {
         const tileValue = this.mazeData[y][x];
         const tileX = x * this.tileSize;
         const tileY = y * this.tileSize;
-
-        switch (tileValue) {
-          case 1:
-            this.wallsLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
-            break;
-          case 0:
-            this.floorLayer1.fill(this.tileColors[tileValue], x, y, 1, 1);
-            break;
-          case 3:
-            this.floorLayer2.fill(this.tileColors[tileValue], x, y, 1, 1);
-            break;
-          case 2:
-            this.startLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
-            this.startTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
-            break;
-          case 4:
-            this.endLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
-            this.endTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
-            break;
+        
+        // 타일 색상 설정
+        const color = this.tileColors[tileValue];
+        graphics.fillStyle(color, 1);
+        
+        // 타일 그리기
+        graphics.fillRect(tileX, tileY, this.tileSize, this.tileSize);
+        
+        // 시작 지점과 종료 지점 저장
+        if (tileValue === 2) { // 시작 지점
+          this.startTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
+        } else if (tileValue === 4) { // 종료 지점
+          this.endTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
+        }
+        
+        // 벽 타일에 물리 충돌 추가
+        if (tileValue === 1) {
+          const wall = this.add.rectangle(tileX + this.tileSize / 2, tileY + this.tileSize / 2, this.tileSize, this.tileSize);
+          this.physics.add.existing(wall, true); // true = 정적 물체
         }
       }
     }
@@ -88,11 +108,12 @@ class MazeScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(this.startTile.x, this.startTile.y, 'player');
     this.player.setCollideWorldBounds(true);
 
-    // 물리 엔진 활성화 (벽 레이어와 충돌 처리)
-    this.physics.add.collider(this.player, this.wallsLayer);
-
+    // 물리 충돌 처리 - 생성된 모든 벽과 충돌
+    const walls = this.physics.world.staticBodies.getChildren();
+    this.physics.add.collider(this.player, walls);
+    
     // 카메라 설정
-    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    this.cameras.main.setBounds(0, 0, this.mazeWidth, this.mazeHeight);
     this.cameras.main.startFollow(this.player);
 
     // 게임 타이머 시작
@@ -111,6 +132,7 @@ class MazeScene extends Phaser.Scene {
     // 상태에 따른 플레이어 이동
     this.player.setVelocity(0);
 
+    // predict 함수가 Promise를 반환하지 않도록 수정한 함수 사용
     this.playerState = predict();
     console.log(`예측 수행함 : ${this.playerState}`)
 
@@ -228,6 +250,7 @@ const config = {
   type: Phaser.AUTO,
   width: 320, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
   height: 320,
+  parent: 'game-container', // 게임이 렌더링될 HTML 요소
   physics: {
     default: 'arcade',
     arcade: {
@@ -238,8 +261,8 @@ const config = {
   scene: [MazeScene, EndScene]
 };
 
-// 게임 시작 함수
-function startGame() {
+// 게임 시작 함수 - 전역으로 사용할 수 있도록 window에 할당
+window.startGame = function() {
   // 기존 게임 인스턴스가 있으면 제거
   if (game) {
     game.destroy(true);
@@ -247,4 +270,5 @@ function startGame() {
 
   // 새 게임 인스턴스 생성
   game = new Phaser.Game(config);
-}
+  console.log('미로 게임이 시작되었습니다.');
+};
