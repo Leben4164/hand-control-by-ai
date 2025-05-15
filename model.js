@@ -45,7 +45,7 @@ async function loadModelFromURL() {
             modelURL = url + 'model.json';
         }
 
-        const modelURL = url + 'model.json';
+        modelURL = url + 'model.json';
         const metadataURL = url + 'metadata.json';
 
 
