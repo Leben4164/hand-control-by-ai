@@ -267,8 +267,8 @@ class EndScene extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: 960, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
-  height: 540,
+  width: 592, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
+  height: 592,
   parent: 'game-container', // 게임이 렌더링될 HTML 요소
   physics: {
     default: 'arcade',
