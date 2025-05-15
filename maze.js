@@ -1,3 +1,4 @@
+let game;
 
 class MazeScene extends Phaser.Scene {
   constructor() {
@@ -115,17 +116,21 @@ class MazeScene extends Phaser.Scene {
     switch (this.playerState) {
       case '위로':
         this.player.setVelocityY(-this.playerSpeed);
+        console.log("위로 이동함")
         break;
       case '아래로':
+        console.log("아래로 이동함")
         this.player.setVelocityY(this.playerSpeed);
         break;
       case '왼쪽으로':
         this.player.setVelocityX(-this.playerSpeed);
         this.player.setFlipX(true); // 스프라이트 반전
+        console.log("왼쪽으로 이동함")
         break;
       case '오른쪽으로':
         this.player.setVelocityX(this.playerSpeed);
         this.player.setFlipX(false); // 스프라이트 반전
+        console.log("오른쪽으로 이동함")
         break;
       case '가만히':
       default:
@@ -232,4 +237,13 @@ const config = {
   scene: [MazeScene, EndScene]
 };
 
-const game = new Phaser.Game(config);
+// 게임 시작 함수
+function startGame() {
+  // 기존 게임 인스턴스가 있으면 제거
+  if (game) {
+    game.destroy(true);
+  }
+
+  // 새 게임 인스턴스 생성
+  game = new Phaser.Game(config);
+}
