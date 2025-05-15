@@ -1,10 +1,227 @@
 
-// 게임 설정
-const gameConfig = {
+class MazeScene extends Phaser.Scene {
+  constructor() {
+    super('MazeScene');
+    this.player = null;
+    this.cursors = null;
+    this.map = null;
+    this.tileset = null;
+    this.wallsLayer = null;
+    this.startTile = null;
+    this.endTile = null;
+    this.startTime = 0;
+    this.endTime = 0;
+    this.score = 0;
+    this.gameTimerText = null;
+    this.starRating = 0;
+    this.mazeData = [ // 임의의 미로 맵 (개발자가 수정 가능)
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 3, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+      [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 4, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+      [1, 2, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
+    this.tileColors = { // 타일 색상 (개발자가 수정 가능)
+      0: 0x808080, // 회색 (바닥 1)
+      3: 0xffff00, // 노란색 (바닥 2)
+      1: 0x000000, // 검정 (벽 & 테두리)
+      2: 0x0000ff, // 파랑 (출발지)
+      4: 0xff0000  // 빨강 (도착지)
+    };
+    this.tileSize = 32; // 타일 크기 (플레이어 스프라이트에 맞춰 조정 필요)
+    this.playerSpeed = 100;
+    this.playerState = '가만히';
+  }
+
+  preload() {
+    this.load.image('player', 'assets/player.png'); // 플레이어 스프라이트 로드 (assets 폴더에 player.png 파일 필요)
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor('#333333'); // 배경색 설정
+
+    // 맵 생성
+    this.map = this.make.tilemap({ data: this.mazeData, tileWidth: this.tileSize, tileHeight: this.tileSize });
+    this.tileset = this.map.addTilesetImage(null, null, this.tileSize, this.tileSize, 0, 0); // 이미지 없이 색상으로 타일 생성
+
+    this.wallsLayer = this.map.createBlankLayer('walls', 0, 0, this.map.width, this.map.height);
+    this.floorLayer1 = this.map.createBlankLayer('floor1', 0, 0, this.map.width, this.map.height);
+    this.floorLayer2 = this.map.createBlankLayer('floor2', 0, 0, this.map.width, this.map.height);
+    this.startLayer = this.map.createBlankLayer('start', 0, 0, this.map.width, this.map.height);
+    this.endLayer = this.map.createBlankLayer('end', 0, 0, this.map.width, this.map.height);
+
+    for (let y = 0; y < this.mazeData.length; y++) {
+      for (let x = 0; x < this.mazeData[y].length; x++) {
+        const tileValue = this.mazeData[y][x];
+        const tileX = x * this.tileSize;
+        const tileY = y * this.tileSize;
+
+        switch (tileValue) {
+          case 1:
+            this.wallsLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
+            break;
+          case 0:
+            this.floorLayer1.fill(this.tileColors[tileValue], x, y, 1, 1);
+            break;
+          case 3:
+            this.floorLayer2.fill(this.tileColors[tileValue], x, y, 1, 1);
+            break;
+          case 2:
+            this.startLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
+            this.startTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
+            break;
+          case 4:
+            this.endLayer.fill(this.tileColors[tileValue], x, y, 1, 1);
+            this.endTile = { x: tileX + this.tileSize / 2, y: tileY + this.tileSize / 2 };
+            break;
+        }
+      }
+    }
+
+    // 플레이어 생성
+    this.player = this.physics.add.sprite(this.startTile.x, this.startTile.y, 'player');
+    this.player.setCollideWorldBounds(true);
+
+    // 물리 엔진 활성화 (벽 레이어와 충돌 처리)
+    this.physics.add.collider(this.player, this.wallsLayer);
+
+    // 카메라 설정
+    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    this.cameras.main.startFollow(this.player);
+
+    // 게임 타이머 시작
+    this.startTime = this.time.now;
+    this.gameTimerText = this.add.text(16, 16, 'Time: 0.0s', { fontSize: '20px', fill: '#fff' }).setScrollFactor(0);
+
+    // 랭킹 시스템 초기화
+    this.loadRankings();
+  }
+
+  update(time, delta) {
+    if (!this.player || this.hasReachedEnd) {
+      return;
+    }
+
+    // 상태에 따른 플레이어 이동
+    this.player.setVelocity(0);
+
+    this.playerState = predict();
+
+    switch (this.playerState) {
+      case '위로':
+        this.player.setVelocityY(-this.playerSpeed);
+        break;
+      case '아래로':
+        this.player.setVelocityY(this.playerSpeed);
+        break;
+      case '왼쪽으로':
+        this.player.setVelocityX(-this.playerSpeed);
+        this.player.setFlipX(true); // 스프라이트 반전
+        break;
+      case '오른쪽으로':
+        this.player.setVelocityX(this.playerSpeed);
+        this.player.setFlipX(false); // 스프라이트 반전
+        break;
+      case '가만히':
+      default:
+        this.player.setVelocity(0);
+        break;
+    }
+
+    // 게임 시간 업데이트
+    const elapsedTime = (this.time.now - this.startTime) / 1000;
+    this.gameTimerText.setText('Time: ' + elapsedTime.toFixed(1) + 's');
+
+    // 도착 지점 도달 확인
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.endTile.x, this.endTile.y) < this.tileSize / 2) {
+      this.reachedEnd();
+    }
+  }
+
+  reachedEnd() {
+    if (this.hasReachedEnd) {
+      return;
+    }
+    this.hasReachedEnd = true;
+    this.endTime = this.time.now;
+    const elapsedTime = (this.endTime - this.startTime) / 1000;
+    this.calculateScore(elapsedTime);
+    this.saveRanking(elapsedTime);
+    this.showEndScene(elapsedTime);
+  }
+
+  calculateScore(time) {
+    if (time <= 60) {
+      this.starRating = 3;
+    } else if (time <= 90) {
+      this.starRating = 2;
+    } else {
+      this.starRating = 1;
+    }
+    this.score = this.starRating; // 점수는 별 개수로 설정 (추후 변경 가능)
+  }
+
+  saveRanking(time) {
+    const rankingData = localStorage.getItem('mazeRankings');
+    let rankings = rankingData ? JSON.parse(rankingData) : [];
+    rankings.push({ time: time, score: this.score });
+    rankings.sort((a, b) => a.time - b.time); // 시간 순으로 정렬
+    localStorage.setItem('mazeRankings', JSON.stringify(rankings.slice(0, 10))); // 최대 10개 랭킹 저장
+  }
+
+  loadRankings() {
+    const rankingData = localStorage.getItem('mazeRankings');
+    this.rankings = rankingData ? JSON.parse(rankingData) : [];
+    console.log('랭킹 로드:', this.rankings);
+  }
+
+  showEndScene(elapsedTime) {
+    this.scene.start('EndScene', { time: elapsedTime, score: this.score, starRating: this.starRating, rankings: this.rankings });
+  }
+}
+
+class EndScene extends Phaser.Scene {
+  constructor() {
+    super('EndScene');
+  }
+
+  init(data) {
+    this.elapsedTime = data.time;
+    this.score = data.score;
+    this.starRating = data.starRating;
+    this.rankings = data.rankings;
+  }
+
+  create() {
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 50, '탈출 성공!', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, `소요 시간: ${this.elapsedTime.toFixed(1)}초`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+    this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 30, `획득 별: ${'⭐'.repeat(this.starRating)}`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+
+    let rankingText = '랭킹:\n';
+    this.rankings.forEach((rank, index) => {
+      rankingText += `${index + 1}. ${rank.time.toFixed(1)}초 (별 ${rank.score})\n`;
+    });
+
+    this.add.text(16, this.cameras.main.height - 20 - (this.rankings.length * 20), rankingText, { fontSize: '16px', fill: '#eee' });
+
+    const restartButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 80, '다시 시작', { fontSize: '24px', fill: '#fff', backgroundColor: '#444', padding: 10 })
+      .setOrigin(0.5)
+      .setInteractive()
+      .on('pointerdown', () => {
+        this.scene.start('MazeScene');
+      });
+  }
+}
+
+const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 400,
-  parent: 'game-container',
+  width: 320, // 초기 게임 화면 크기 (미로 크기에 따라 조정 가능)
+  height: 320,
   physics: {
     default: 'arcade',
     arcade: {
@@ -12,159 +229,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update
-  }
+  scene: [MazeScene, EndScene]
 };
 
-// 게임 상태 관리 클래스
-class GameState {
-  constructor() {
-    this.score = 0;
-    this.scoreDecreaseInterval = 100; // 점수 감소 간격 (ms)
-    this.playerSpeed = 150;
-  }
-
-  reset() {
-    this.score = 1000;
-  }
-}
-
-// 게임 변수
-let game;
-let player;
-let background;
-let scoreText;
-let gameState = new GameState(); // 게임 상태 객체
-let walls;
-let goal;
-let startPosition = { x: 50, y: 50 }; // 시작 좌표
-let goalPosition = { x: 750, y: 350 }; // 도착 좌표
-const cellSize = 32; // 미로 셀 크기
-let action = ''
-
-// 랜덤 미로 생성 함수
-function generateMaze(width, height, cellSize) {
-  const gridWidth = Math.floor(width / cellSize);
-  const gridHeight = Math.floor(height / cellSize);
-  const maze = [];
-
-  // 모든 셀을 벽으로 초기화
-  for (let y = 0; y < gridHeight; y++) {
-    maze[y] = [];
-    for (let x = 0; x < gridWidth; x++) {
-      maze[y][x] = 1; // 1은 벽
-    }
-  }
-
-  function carvePath(x, y) {
-    maze[y][x] = 0; // 0은 길
-    const directions = [{ dx: 0, dy: -2 }, { dx: 0, dy: 2 }, { dx: -2, dy: 0 }, { dx: 2, dy: 0 }]
-      .sort(() => Math.random() - 0.5); // 무작위 순서
-
-    for (const dir of directions) {
-      const nx = x + dir.dx;
-      const ny = y + dir.dy;
-      if (nx > 0 && nx < gridWidth - 1 && ny > 0 && ny < gridHeight - 1 && maze[ny][nx] === 1) {
-        maze[y + dir.dy / 2][x + dir.dx / 2] = 0;
-        carvePath(nx, ny);
-      }
-    }
-  }
-
-  // 시작 셀에서부터 길을 만들기 시작
-  const startX = Math.floor(Math.random() * Math.floor(gridWidth / 2)) * 2 + 1;
-  const startY = Math.floor(Math.random() * Math.floor(gridHeight / 2)) * 2 + 1;
-  carvePath(startX, startY);
-
-  return maze;
-}
-
-// 이미지 로드
-function preload() {
-  this.load.image('background', 'assets/placeholder_background.png'); // 임시 배경 이미지
-  this.load.image('player', 'assets/placeholder_player.png'); // 임시 플레이어 이미지
-  this.load.image('wall', 'assets/placeholder_wall.png'); // 임시 벽 이미지
-  this.load.image('goal', 'assets/placeholder_goal.png'); // 임시 도착 지점 이미지
-}
-
-function create() {
-  // 배경 추가
-  background = this.add.image(gameConfig.width / 2, gameConfig.height / 2, 'background');
-
-  // 미로 생성
-  const mazeData = generateMaze(gameConfig.width, gameConfig.height, cellSize);
-  const gridWidth = mazeData[0].length;
-  const gridHeight = mazeData.length;
-
-  // 그룹 생성
-  walls = this.physics.add.staticGroup();
-
-  // 미로 배치
-  for (let y = 0; y < gridHeight; y++) {
-    for (let x = 0; x < gridWidth; x++) {
-      if (mazeData[y][x] === 1) {
-        walls.create(x * cellSize + cellSize / 2, y * cellSize + cellSize / 2, 'wall');
-      }
-    }
-  }
-
-  // 플레이어 생성 및 초기 위치 설정
-  player = this.physics.add.sprite(startPosition.x, startPosition.y, 'player');
-  player.setCollideWorldBounds(true);
-  this.physics.add.collider(player, walls);
-
-  // 도착 지점 생성 및 위치 설정
-  goal = this.physics.add.sprite(goalPosition.x, goalPosition.y, 'goal');
-  this.physics.add.overlap(player, goal, () => {
-    alert('미로 탈출 성공!');
-    startGame(); // 게임 재시작
-  }, null, this);
-
-  // 점수 텍스트 생성 및 초기화
-  gameState.score = 1000;
-  scoreText = this.add.text(16, 16, 'Score: ' + gameState.score, { fontSize: '20px', fill: '#fff' });
-
-  // 점수 감소 인터벌 설정
-  this.time.addEvent({
-    delay: gameState.scoreDecreaseInterval,
-    callback: () => {
-      gameState.score -= 1;
-      scoreText.setText('Score: ' + gameState.score);
-    },
-    callbackScope: this,
-    loop: true
-  });
-}
-
-function update() {
-  player.setVelocity(0);
-
-  action = predict();
-
-  // 티처블 머신 예측 결과에 따른 플레이어 이동
-  if (action === 'up') {
-    player.setVelocityY(-gameState.playerSpeed);
-  } else if (action === 'down') {
-    player.setVelocityY(gameState.playerSpeed);
-  } else if (action === 'left') {
-    player.setVelocityX(-gameState.playerSpeed);
-  } else if (action === 'right') {
-    player.setVelocityX(gameState.playerSpeed);
-  }
-}
-
-function startGame() {
-  // 기존 게임 인스턴스가 있으면 제거
-  if (game) {
-    game.destroy(true);
-  }
-
-  // 게임 변수 초기화
-  gameState.reset();
-
-  // 새 게임 인스턴스 생성
-  game = new Phaser.Game(gameConfig);
-}
+const game = new Phaser.Game(config);

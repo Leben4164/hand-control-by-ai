@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미로 게임 테스트</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #333;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            background-color: #444;
+            padding: 15px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+        }
+        .controls h2 {
+            margin-top: 0;
+        }
+        .control-key {
+            display: inline-block;
+            background-color: #555;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+    <!-- Phaser 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+<body>
+    <h1>미로 게임 테스트</h1>
+    
+    <div id="game-container">
+        canvas id="game-canvas"></canvas>
+    </div>
+    
+    <div class="controls">
+        <h2>테스트 컨트롤</h2>
+        <p>
+            <span class="control-key">위로</span> 
+            <span class="control-key">아래로</span> 
+            <span class="control-key">왼쪽으로</span> 
+            <span class="control-key">오른쪽으로</span> 
+            <span class="control-key">가만히</span>
+        </p>
+        <p>손동작 대신 아래 버튼으로 테스트할 수 있습니다:</p>
+        <div>
+            <button id="up-btn">위로</button>
+            <button id="down-btn">아래로</button>
+            <button id="left-btn">왼쪽으로</button>
+            <button id="right-btn">오른쪽으로</button>
+            <button id="idle-btn">가만히</button>
+        </div>
+    </div>
+
+    <!-- 테스트용 predict 함수 구현 -->
+    <script>
+        // 현재 동작 상태 (maze.js의 playerState와 연결)
+        let currentPlayerState = '가만히';
+        
+        // predict 함수 구현 (maze.js에서 사용)
+        function predict() {
+            return currentPlayerState;
+        }
+        
+        // 버튼 이벤트 리스너 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('up-btn').addEventListener('click', function() {
+                currentPlayerState = '위로';
+            });
+            
+            document.getElementById('down-btn').addEventListener('click', function() {
+                currentPlayerState = '아래로';
+            });
+            
+            document.getElementById('left-btn').addEventListener('click', function() {
+                currentPlayerState = '왼쪽으로';
+            });
+            
+            document.getElementById('right-btn').addEventListener('click', function() {
+                currentPlayerState = '오른쪽으로';
+            });
+            
+            document.getElementById('idle-btn').addEventListener('click', function() {
+                currentPlayerState = '가만히';
+            });
+            
+            // 키보드 이벤트도 추가
+            document.addEventListener('keydown', function(event) {
+                switch(event.key) {
+                    case 'ArrowUp':
+                        currentPlayerState = '위로';
+                        break;
+                    case 'ArrowDown':
+                        currentPlayerState = '아래로';
+                        break;
+                    case 'ArrowLeft':
+                        currentPlayerState = '왼쪽으로';
+                        break;
+                    case 'ArrowRight':
+                        currentPlayerState = '오른쪽으로';
+                        break;
+                    case ' ': // 스페이스바
+                        currentPlayerState = '가만히';
+                        break;
+                }
+            });
+        });
+    </script>
+    
+    <!-- 플레이어 이미지 에셋 생성 -->
+    <script>
+        // 게임 시작 전 플레이어 이미지 생성
+        document.addEventListener('DOMContentLoaded', function() {
+            // 캔버스 생성
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            // 간단한 플레이어 아이콘 그리기
+            ctx.fillStyle = '#4a90e2';
+            ctx.beginPath();
+            ctx.arc(16, 16, 12, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 데이터 URL로 변환
+            const dataURL = canvas.toDataURL();
+            
+            // 로컬 스토리지에 저장
+            localStorage.setItem('playerImageDataURL', dataURL);
+            
+            // Phaser preload 함수 오버라이드
+            const originalPreload = Phaser.Scene.prototype.preload;
+            Phaser.Scene.prototype.preload = function() {
+                if (this.load && typeof this.load.image === 'function') {
+                    this.load.image('player', dataURL);
+                }
+                if (originalPreload) originalPreload.apply(this, arguments);
+            };
+        });
+    </script>
+    
+    <!-- 미로 게임 스크립트 -->
+    <script src="maze.js"></script>
+</body>
+</html>
