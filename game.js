@@ -9,7 +9,7 @@ const gameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { y: 1000 },
-            debug: false
+            debug: true
         }
     },
     scene: {
@@ -219,12 +219,7 @@ function update(time, delta) {
     }
 
     // Teachable Machine 모델에서 동작 가져오기
-    let action = 'idle';
-    try {
-        action = predict();
-    } catch (error) {
-        console.warn('getCurrentAction 함수를 찾을 수 없습니다:', error);
-    }
+    action = predict();
 
     // 플레이어 동작 처리
     if (action === 'jump' && player.body.touching.down && !gameState.jumping) {

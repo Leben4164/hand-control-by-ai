@@ -84,10 +84,10 @@ function generateMaze(width, height, cellSize) {
 
 // 이미지 로드
 function preload() {
-  this.load.image('background', 'assets/placeholder_background.png'); // 임시 배경 이미지
-  this.load.image('player', 'assets/placeholder_player.png'); // 임시 플레이어 이미지
-  this.load.image('wall', 'assets/placeholder_wall.png'); // 임시 벽 이미지
-  this.load.image('goal', 'assets/placeholder_goal.png'); // 임시 도착 지점 이미지
+  this.load.image('background', 'assets/background.png'); // 배경 이미지
+  this.load.image('player', 'assets/player.png'); // 플레이어 이미지
+  this.load.image('wall', 'assets/wall.png'); // 벽 이미지
+  this.load.image('goal', 'assets/goal.png'); // 도착 지점 이미지
 }
 
 function create() {
