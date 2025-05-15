@@ -115,7 +115,7 @@ class MazeScene extends Phaser.Scene {
     }
 
     // 플레이어 생성
-    this.player = this.physics.add.sprite(500, 35, 'player');
+    this.player = this.physics.add.sprite(48, 552, 'player');
     this.player.setCollideWorldBounds(true);
 
     // 벽을 저장할 그룹 생성
