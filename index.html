@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>코어 데이터 분석 AI기반 2D 게임</title>
+    <title>코어 티처블 머신 미로탈출 게임</title>
     <link rel="stylesheet" href="styles.css">
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.8.0"></script>
@@ -38,7 +38,7 @@
 <body>
     <!-- 모델 파일 제출 화면 -->
     <div id="model-upload-screen" class="screen">
-        <h1>코어 데이터 분석 AI기반 2D 게임</h1>
+        <h1>코어 티처블 머신 미로탈출 게임</h1>
         <p>Teachable Machine으로 학습한 모델 URL을 입력하세요.</p>
 
         <div class="upload-container">
@@ -51,7 +51,7 @@
         <div id="model-status" class="status-message"></div>
         <div class="model-info">
             <p>모델 URL은 Teachable Machine에서 내보내기 버튼을 누르면 확인할 수 있습니다.</p>
-            <p>3가지 클래스(jump, slide, idle)를 학습시킨 모델이 필요합니다.</p>
+            <p>5가지 클래스(정지, 상, 하, 좌, 우)를 학습시킨 모델이 필요합니다.</p>
         </div>
     </div>
 
