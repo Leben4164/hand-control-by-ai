@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", initApp);
  */
 function initApp() {
     // 로컬 스토리지에서 최고 점수 가져와서 표시
-    updateHighScoreDisplay();
+
     // 버튼
     const loadURLBtn = document.getElementById("load-url-btn");
     const testYesBtn = document.getElementById("test-yes-btn");
@@ -51,13 +51,7 @@ function initApp() {
     window.showGameOverScreen = showGameOverScreen;
 }
 
-/**
- * 최고 점수 표시 업데이트 함수
- */
-function updateHighScoreDisplay() {
-    const highScore = parseInt(localStorage.getItem("highScore") || '0', 10);
-    document.getElementById("high-score").textContent = highScore;
-}
+
 
 /**
  * 모델 테스트 성공 처리 함수
@@ -161,10 +155,6 @@ function showGameOverScreen() {
 
     // 최종 점수 표시
     document.querySelector("#final-score span").textContent = score;
-
-    // 최고 점수 표시
-    const highScore = localStorage.getItem("highScore") || 0;
-    document.querySelector("#best-score span").textContent = highScore;
 
     // 랭킹 표시
     displayRanking();
