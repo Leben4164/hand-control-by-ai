@@ -56,7 +56,7 @@ class MazeScene extends Phaser.Scene {
     ];
     this.tileColors = { // 타일 색상 (개발자가 수정 가능)ㄴ
       0: 0x808080, // 회색 (바닥 1)
-      3: 0xbca690, // 노란색 (바닥 2)
+      3: 0xbca690, // 노란색 (바닥 2)**********9999999999999999999999999999999999999999999999999999999999999999999996
       1: 0x000000, // 검정 (벽 & 테두리)
       2: 0x0000ff, // 파랑 (출발지)
       4: 0xff0000  // 빨강 (도착지)
@@ -215,8 +215,10 @@ class MazeScene extends Phaser.Scene {
 
   saveRanking(time) {
     const rankingData = localStorage.getItem('mazeRankings');
+    const studentIdData = localStorage.getItem('studentId')
+    const nameData = localStorage.getItem('playerName')
     let rankings = rankingData ? JSON.parse(rankingData) : [];
-    rankings.push({ time: time, score: this.score });
+    rankings.push({ time: time, score: this.score, name: nameData, id: studentIdData });
     rankings.sort((a, b) => a.time - b.time); // 시간 순으로 정렬
     localStorage.setItem('mazeRankings', JSON.stringify(rankings.slice(0, 10))); // 최대 10개 랭킹 저장
   }
